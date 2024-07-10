@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  main-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: df159357
+    ports:
+      - "3306:3306"
+    networks:
+      - gamemuncheol
+
+  backup-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: df159357
+    ports:
+      - "3307:3306"
+    networks:
+      - gamemuncheol
+
+  # Redis 설정
+  main-redis:
+    image: redis:latest
+    container_name: main-redis
+    environment:
+      REDIS_PASSWORD: df159357
+    ports:
+      - "6379:6379"
+    networks:
+      - gamemuncheol
+
+  backup-redis:
+    image: redis:latest
+    container_name: backup-redis
+    environment:
+      REDIS_PASSWORD: df159357
+    ports:
+      - "9736:6379"
+    networks:
+      - gamemuncheol
+
+  server-1:
+    build:
+      context: ./server-1/
+      dockerfile: Dockerfile
+    networks:
+      - gamemuncheol
+    ports: 
+      - 10221:22
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
+
+  server-2:
+    build:
+      context: ./server-2/
+      dockerfile: Dockerfile
+    networks:
+      - gamemuncheol
+    ports:
+      - 10222:22
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
+  nginx:
+    build:
+      context: ./nginx/
+      dockerfile: Dockerfile
+    networks:
+      - gamemuncheol
+    ports:
+      - 80:80
+      - 8080:8080
+      - 22:22
+      - 443:443
+networks:
+  gamemuncheol:
+    driver: bridge
