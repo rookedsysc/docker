@@ -27,8 +27,12 @@ services:
       REDIS_PASSWORD: df159357
     ports:
       - "6379:6379"
+    volumes:
+      - ./redis/main-redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     networks:
       - gamemuncheol
+
 
   backup-redis:
     image: redis:latest
@@ -76,7 +80,7 @@ services:
     ports:
       - 80:80
       - 8080:8080
-      - 22:22
+      - 10223:22
       - 443:443
 networks:
   gamemuncheol:
