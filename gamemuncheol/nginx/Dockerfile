@@ -4,7 +4,7 @@ FROM ubuntu:latest
 # 환경 업데이트 및 필요한 패키지 설치
 RUN apt -y upgrade
 RUN apt -y update && apt install -y sudo
-RUN apt install -y openssh-server locales 
+RUN apt install -y openssh-server locales nginx
 RUN rm -rf /var/lib/apt/lists/* 
  
 # 로케일 설정
@@ -26,9 +26,14 @@ RUN sed -i 's/#\?PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ss
 # Sudo 설정
 RUN chmod 640 /etc/sudoers
 RUN sed -i '46inginx ALL=(ALL:ALL) ALL' /etc/sudoers
+
+# Nginx 설정
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
  
-# SSH 서비스 포트 (기본: 22)
+# 서비스 포트 추가
 EXPOSE 22
+EXPOSE 80  
+
  
-# 컨테이너 시작 시 SSH 서비스 실행
-CMD ["/usr/sbin/sshd", "-D"]
+# 컨테이너 시작 시 SSH & Ngninx 서비스 실행
+CMD service nginx start && /usr/sbin/sshd -D

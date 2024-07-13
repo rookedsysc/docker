@@ -33,6 +33,17 @@ services:
     networks:
       - gamemuncheol
 
+
+  backup-redis:
+    image: redis:latest
+    container_name: backup-redis
+    environment:
+      REDIS_PASSWORD: df159357
+    ports:
+      - "9736:6379"
+    networks:
+      - gamemuncheol
+
   server-1:
     build:
       context: ./server-1/
