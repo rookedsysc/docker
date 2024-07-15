@@ -9,6 +9,8 @@ services:
       - "3306:3306"
     networks:
       - gamemuncheol
+    volumes:
+      - main-db-data:/var/lib/mysql
 
   backup-db:
     image: mysql:latest
@@ -18,6 +20,8 @@ services:
       - "3307:3306"
     networks:
       - gamemuncheol
+    volumes:
+      - backup-db-data:/var/lib/mysql
 
   # Redis 설정
   main-redis:
@@ -45,13 +49,12 @@ services:
       - gamemuncheol
 
   server-1:
-    build:
-      context: ./server-1/
-      dockerfile: Dockerfile
+    image: rookedsysc/gamemuncheol:latest
     networks:
       - gamemuncheol
     ports: 
       - 10221:22
+      - 8081:8080
     deploy:
       resources:
         limits:
@@ -59,13 +62,12 @@ services:
           cpus: "2.0"
 
   server-2:
-    build:
-      context: ./server-2/
-      dockerfile: Dockerfile
+    image: rookedsysc/gamemuncheol:latest
     networks:
       - gamemuncheol
     ports:
       - 10222:22
+      - 8082:8080
     deploy:
       resources:
         limits:
@@ -87,3 +89,7 @@ services:
 networks:
   gamemuncheol:
     driver: bridge
+
+volumes:
+  main-db-data:
+  backup-db-data:
