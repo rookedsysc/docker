@@ -17,6 +17,12 @@ update_service() {
   # 서비스 업데이트 및 재시작
   sudo docker compose up -d --no-deps --scale $service=1 $service
 
+  # 서비스 시작 확인
+  while ! sudo docker compose ps | grep -q "$service.*Up"; do
+    echo "Waiting for $service to start..."
+    sleep 5
+  done
+
   echo "$service has been updated."
 }
 
