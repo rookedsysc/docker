@@ -6,3 +6,13 @@ scrape_configs:
   - job_name: 'nginx'
     static_configs:
       - targets: ['192.168.1.12:9113']
+
+  - job_name: 'server-1'
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ['192.168.1.12:8081']
+
+  - job_name: 'server-2'
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ['192.168.1.12:8082']
