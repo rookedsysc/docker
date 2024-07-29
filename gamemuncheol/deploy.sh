@@ -1,34 +1,54 @@
 #!/bin/bash
 
-# 서비스 목록
-services=("server-1" "server-2")
+# docker-compose 파일 정의
 
-# 배포할 이미지
-image="rookedsysc/gamemuncheol:latest"
+# 서버 상태 확인을 위한 URL
+SERVER_URLS=("http://localhost:8081/actuator" "http://localhost:8082/actuator")
+SERVER_NAMES=("server-1" "server-2")
 
-# Docker Compose 파일 위치
-compose_file="~/Documents/docker/gamemuncheol/docker-compose.yaml"
+# 최대 시도 횟수 및 대기 시간 설정
+MAX_RETRIES=30
+WAIT_TIME=10
 
-# 롤링 업데이트 함수
-update_service() {
-  service=$1
-  echo "Updating $service..."
+# 함수: 서버 상태 확인
+check_server_status() {
+  local server_url=$1
+  local retries=0
 
-  # 서비스 업데이트 및 재시작
-  sudo docker compose up -d --no-deps --scale $service=1 $service
+  echo "Checking server status at $server_url..."
 
-  # 서비스 시작 확인
-  while ! sudo docker compose ps | grep -q "$service.*Up"; do
-    echo "Waiting for $service to start..."
-    sleep 5
+  while [[ $retries -lt $MAX_RETRIES ]]; do
+    if curl -s --head "$server_url" | grep "200" > /dev/null; then
+      echo "Server at $server_url is up and running."
+      return 0
+    else
+      echo "Server at $server_url is not ready yet. Waiting..."
+      retries=$((retries + 1))
+      sleep $WAIT_TIME
+    fi
   done
 
-  echo "$service has been updated."
+  echo "Server at $server_url failed to start within the maximum retry limit."
+  return 1
 }
 
-# 각 서비스 업데이트
-for service in "${services[@]}"; do
-  update_service $service
+# 서버를 순차적으로 시작하고 상태 확인
+i=0
+while [[ $i -lt ${#SERVER_NAMES[@]} ]]; do
+  server_name=${SERVER_NAMES[$i]}
+  server_url=${SERVER_URLS[$i]}
+
+  echo "run docker command : docker-compose up -d $server_name"
+  sudo docker compose up -d $server_name
+
+  if check_server_status $server_url; then
+    echo "$server_name is successfully started."
+  else
+    echo "Failed to start $server_name."
+    exit 1
+  fi
+
+  i=$((i + 1))
 done
 
-echo "Rolling update completed successfully."
+echo "Rolling deployment completed successfully."
